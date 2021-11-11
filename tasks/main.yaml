@@ -1,0 +1,21 @@
+---
+
+- name: Build extra disks
+  shell:
+    cmd: "qemu-img create -f qcow2 {{os_path}}/{{ inventory_hostname_short }}-disk{{ item }}.qcow2 {{ extra_disks.size }}"
+  args:
+    creates: "{{os_path}}/{{ inventory_hostname_short }}-disk{{ item }}.qcow2"
+  with_sequence: "count={{ extra_disks.count }}"
+  when: extra_disks is defined
+  delegate_to: "{{ kvm_host }}"
+
+- set_fact:
+    extra_disk_paths: []
+  delegate_to: "{{ kvm_host }}"
+  run_once: true
+
+- set_fact:
+    extra_disk_paths: "{{ extra_disk_paths }} + [ '{{os_path}}/{{ inventory_hostname_short }}-disk{{ item }}.qcow2' ]"
+  with_sequence: "count={{ extra_disks.count }}"
+  when: extra_disks is defined
+  delegate_to: "{{ kvm_host }}"
